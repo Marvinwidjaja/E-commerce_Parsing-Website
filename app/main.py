@@ -210,44 +210,62 @@ def get_info():
 @app.route("/")
 def root(): 
     loggedIn, firstName= getLoginDetails()
-    email = session['email']
-    final_price=[]
-    final_name=[]
-    final_url=[]
-    with sqlite3.connect(db_path) as conn:
-        cur=conn.cursor()
-        cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
-        userId = cur.fetchone()[0]
-        cur=conn.cursor()
-        cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
-        number=cur.fetchall()
-        cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
-        price_cart=cur.fetchall()
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("SElECT  product_name FROM user")
-        stripped_line=cur.fetchall()
-        cur.execute("SElECT  product_price FROM user")
-        bbc_price=cur.fetchall()
-        cur.execute("SElECT  product_url FROM user")
-        aces=cur.fetchall()
-        conn.commit()
-    conn.close()
-    final_price=list(chain.from_iterable(bbc_price))
-    final_url=list(chain.from_iterable(aces))
-    final_name=list(chain.from_iterable(stripped_line))
-    price_final_cart=list(chain.from_iterable(price_cart))
-    price_int=[x[1:]for x in price_final_cart]
-    price_int=[float(x) for x in price_int]
-    number_final=list(chain.from_iterable(number))
-    total=sum(x * y for x, y in zip(price_int, number_final))
-    if total==0:
-        total="£0.00"
+    if 'email' in session:
+        email = session['email']
+        final_price=[]
+        final_name=[]
+        final_url=[]
+        with sqlite3.connect(db_path) as conn:
+            cur=conn.cursor()
+            cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
+            userId = cur.fetchone()[0]
+            cur=conn.cursor()
+            cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
+            number=cur.fetchall()
+            cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
+            price_cart=cur.fetchall()
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT  product_name FROM user")
+            stripped_line=cur.fetchall()
+            cur.execute("SElECT  product_price FROM user")
+            bbc_price=cur.fetchall()
+            cur.execute("SElECT  product_url FROM user")
+            aces=cur.fetchall()
+            conn.commit()
+        conn.close()
+        final_price=list(chain.from_iterable(bbc_price))
+        final_url=list(chain.from_iterable(aces))
+        final_name=list(chain.from_iterable(stripped_line))
+        price_final_cart=list(chain.from_iterable(price_cart))
+        price_int=[x[1:]for x in price_final_cart]
+        price_int=[float(x) for x in price_int]
+        number_final=list(chain.from_iterable(number))
+        total=sum(x * y for x, y in zip(price_int, number_final))
+        if total==0:
+            total="£0.00"
+        else:
+            total="£"+str(total)+"0"
+        total_quantity=sum(number_final)
+        firstName=firstName[0]
+        return render_template('home.html',aces=final_url,name=final_name,price=final_price, loggedIn=loggedIn, firstName=firstName,total=total,total_quantity=total_quantity)
     else:
-        total="£"+str(total)+"0"
-    total_quantity=sum(number_final)
-    firstName=firstName[0]
-    return render_template('home.html',aces=final_url,name=final_name,price=final_price, loggedIn=loggedIn, firstName=firstName,total=total,total_quantity=total_quantity)
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT  product_name FROM user")
+            stripped_line=cur.fetchall()
+            cur.execute("SElECT  product_price FROM user")
+            bbc_price=cur.fetchall()
+            cur.execute("SElECT  product_url FROM user")
+            aces=cur.fetchall()
+            conn.commit()
+        conn.close()
+        final_price=list(chain.from_iterable(bbc_price))
+        final_url=list(chain.from_iterable(aces))
+        final_name=list(chain.from_iterable(stripped_line))
+        # for i in bbc_price:
+    #     final_price.append(i)
+        return render_template('home.html',aces=final_url,name=final_name,price=final_price, loggedIn=loggedIn, firstName=firstName)
 def getLoginDetails():
     with sqlite3.connect(db_path) as conn:
         cur = conn.cursor()
@@ -282,44 +300,63 @@ def success():
 @app.route("/shop")
 def shop():
     loggedIn, firstName= getLoginDetails()
-    email = session['email']
-    final_price=[]
-    final_name=[]
-    final_url=[]
-    with sqlite3.connect(db_path) as conn:
-        cur=conn.cursor()
-        cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
-        userId = cur.fetchone()[0]
-        cur=conn.cursor()
-        cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
-        number=cur.fetchall()
-        cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
-        price_cart=cur.fetchall()
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("SElECT  product_name FROM user")
-        stripped_line=cur.fetchall()
-        cur.execute("SElECT  product_price FROM user")
-        bbc_price=cur.fetchall()
-        cur.execute("SElECT  product_url FROM user")
-        aces=cur.fetchall()
-        conn.commit()
-    conn.close()
-    final_price=list(chain.from_iterable(bbc_price))
-    final_url=list(chain.from_iterable(aces))
-    final_name=list(chain.from_iterable(stripped_line))
-    price_final_cart=list(chain.from_iterable(price_cart))
-    price_int=[x[1:]for x in price_final_cart]
-    price_int=[float(x) for x in price_int]
-    number_final=list(chain.from_iterable(number))
-    total=sum(x * y for x, y in zip(price_int, number_final))
-    if total==0:
-        total="£0.00"
+    if 'email' in session:
+        email = session['email']
+        final_price=[]
+        final_name=[]
+        final_url=[]
+        with sqlite3.connect(db_path) as conn:
+            cur=conn.cursor()
+            cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
+            userId = cur.fetchone()[0]
+            cur=conn.cursor()
+            cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
+            number=cur.fetchall()
+            cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
+            price_cart=cur.fetchall()
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT  product_name FROM user")
+            stripped_line=cur.fetchall()
+            cur.execute("SElECT  product_price FROM user")
+            bbc_price=cur.fetchall()
+            cur.execute("SElECT  product_url FROM user")
+            aces=cur.fetchall()
+            conn.commit()
+        conn.close()
+        final_price=list(chain.from_iterable(bbc_price))
+        final_url=list(chain.from_iterable(aces))
+        final_name=list(chain.from_iterable(stripped_line))
+        price_final_cart=list(chain.from_iterable(price_cart))
+        price_int=[x[1:]for x in price_final_cart]
+        price_int=[float(x) for x in price_int]
+        number_final=list(chain.from_iterable(number))
+        total=sum(x * y for x, y in zip(price_int, number_final))
+        if total==0:
+            total="£0.00"
+        else:
+            total="£"+str(total)+"0"
+        total_quantity=sum(number_final)
+        firstName=firstName[0]
+        return render_template('shop.html',aces=final_url,name=final_name,price=final_price,loggedIn=loggedIn, firstName=firstName,total=total,total_quantity=total_quantity)
     else:
-        total="£"+str(total)+"0"
-    total_quantity=sum(number_final)
-    firstName=firstName[0]
-    return render_template('shop.html',aces=final_url,name=final_name,price=final_price,loggedIn=loggedIn, firstName=firstName,total=total,total_quantity=total_quantity)
+        final_price=[]
+        final_name=[]
+        final_url=[]
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT  product_name FROM user")
+            stripped_line=cur.fetchall()
+            cur.execute("SElECT  product_price FROM user")
+            bbc_price=cur.fetchall()
+            cur.execute("SElECT  product_url FROM user")
+            aces=cur.fetchall()
+            conn.commit()
+        conn.close()
+        final_price=list(chain.from_iterable(bbc_price))
+        final_url=list(chain.from_iterable(aces))
+        final_name=list(chain.from_iterable(stripped_line))
+        return render_template('shop.html',aces=final_url,name=final_name,price=final_price)
 @app.route("/register", methods = ['GET', 'POST'])
 def register():
     if request.method == 'POST': 
@@ -363,83 +400,139 @@ def login():
             return render_template('login.html', error=error)
 @app.route('/details')
 def details():
-    id=request.args.get('id')
-    loggedIn, firstName= getLoginDetails()
-    email = session['email']
-    details=[]
-    details_final=[]
-    num=[]
-    cumsum_final=[]
-    num_final=[]
-    cumsum_final=[]
-    with sqlite3.connect(db_path) as conn:
-        cur=conn.cursor()
-        cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
-        userId = cur.fetchone()[0]
-        cur=conn.cursor()
-        cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
-        number=cur.fetchall()
-        cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
-        price_cart=cur.fetchall()
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("SElECT  detail_images FROM details")
-        details=cur.fetchall()
-        conn.commit()
-    conn.close()
-    final_details=list(chain.from_iterable(details))
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("SElECT total FROM user")
-        num=cur.fetchall()
-        cur.execute("SElECT cum_total FROM user")
-        cumsum=cur.fetchall()
-        cur.execute("SELECT product_name FROM user")
-        name=cur.fetchall()
-        cur.execute("SELECT product_price FROM user")
-        price=cur.fetchall()
-        cur.execute("SELECT product_desc FROM user")
-        desc=cur.fetchall()
-        conn.commit()
-    conn.close()
-    num_final=list(chain.from_iterable(num))
-    cumsum_final=list(chain.from_iterable(cumsum))
-    price_final=list(chain.from_iterable(price))
-    name_final=list(chain.from_iterable(name))
-    desc_final=list(chain.from_iterable(desc))
-    q=int(id)
-    price_final_cart=list(chain.from_iterable(price_cart))
-    price_int=[x[1:]for x in price_final_cart]
-    price_int=[float(x) for x in price_int]
-    number_final=list(chain.from_iterable(number))
-    total=sum(x * y for x, y in zip(price_int, number_final))
-    firstName=firstName[0]
-    if total==0:
-        total="£0.00"
+    if 'email' in session:
+        id=request.args.get('id')
+        loggedIn, firstName= getLoginDetails()
+        email = session['email']
+        details=[]
+        details_final=[]
+        num=[]
+        cumsum_final=[]
+        num_final=[]
+        cumsum_final=[]
+        with sqlite3.connect(db_path) as conn:
+            cur=conn.cursor()
+            cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
+            userId = cur.fetchone()[0]
+            cur=conn.cursor()
+            cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
+            number=cur.fetchall()
+            cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
+            price_cart=cur.fetchall()
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT  detail_images FROM details")
+            details=cur.fetchall()
+            conn.commit()
+        conn.close()
+        final_details=list(chain.from_iterable(details))
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT total FROM user")
+            num=cur.fetchall()
+            cur.execute("SElECT cum_total FROM user")
+            cumsum=cur.fetchall()
+            cur.execute("SELECT product_name FROM user")
+            name=cur.fetchall()
+            cur.execute("SELECT product_price FROM user")
+            price=cur.fetchall()
+            cur.execute("SELECT product_desc FROM user")
+            desc=cur.fetchall()
+            conn.commit()
+        conn.close()
+        num_final=list(chain.from_iterable(num))
+        cumsum_final=list(chain.from_iterable(cumsum))
+        price_final=list(chain.from_iterable(price))
+        name_final=list(chain.from_iterable(name))
+        desc_final=list(chain.from_iterable(desc))
+        q=int(id)
+        price_final_cart=list(chain.from_iterable(price_cart))
+        price_int=[x[1:]for x in price_final_cart]
+        price_int=[float(x) for x in price_int]
+        number_final=list(chain.from_iterable(number))
+        total=sum(x * y for x, y in zip(price_int, number_final))
+        firstName=firstName[0]
+        if total==0:
+            total="£0.00"
+        else:
+            total="£"+str(total)+"0"
+        total_quantity=sum(number_final)
+
+        if (q==0) and ((num_final[1]-0)==2):
+            a=0
+            b=1
+            return render_template("detailscopy.html",a=a,b=b,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
+        if (q==0) and ((num_final[1]-0)==3):
+            a=0
+            b=1
+            c=2
+            return render_template("details.html",a=a,b=b,details=final_details,c=c,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
+        if (q>0) and (cumsum_final[q]-cumsum_final[q-1]==3):
+            a=cumsum_final[q]
+            b=cumsum_final[q]+1
+            c=cumsum_final[q]+2
+            return render_template("details.html",a=a,b=b,details=final_details,c=c,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
+        if (q>0) and (cumsum_final[q]-cumsum_final[q-1]==2):
+            a=cumsum_final[q]+1
+            b=cumsum_final[q]+2
+            return render_template("detailscopy.html",a=a,b=b,details=final_details,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
+
+        return render_template("details.html",details=final_details,name=name_final,price=price_final,desc=desc_final,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
     else:
-        total="£"+str(total)+"0"
-    total_quantity=sum(number_final)
+        id=request.args.get('id')
+        details=[]
+        details_final=[]
+        num=[]
+        cumsum_final=[]
+        num_final=[]
+        cumsum_final=[]
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT  detail_images FROM details")
+            details=cur.fetchall()
+            conn.commit()
+        conn.close()
+        final_details=list(chain.from_iterable(details))
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("SElECT total FROM user")
+            num=cur.fetchall()
+            cur.execute("SElECT cum_total FROM user")
+            cumsum=cur.fetchall()
+            cur.execute("SELECT product_name FROM user")
+            name=cur.fetchall()
+            cur.execute("SELECT product_price FROM user")
+            price=cur.fetchall()
+            cur.execute("SELECT product_desc FROM user")
+            desc=cur.fetchall()
+            conn.commit()
+        conn.close()
+        num_final=list(chain.from_iterable(num))
+        cumsum_final=list(chain.from_iterable(cumsum))
+        price_final=list(chain.from_iterable(price))
+        name_final=list(chain.from_iterable(name))
+        desc_final=list(chain.from_iterable(desc))
+        q=int(id)
+        if (q==0) and ((num_final[1]-0)==2):
+            a=0
+            b=1
+            return render_template("detailscopy.html",a=a,b=b,name=name_final,price=price_final,desc=desc_final,q=q)
+        if (q==0) and ((num_final[1]-0)==3):
+            a=0
+            b=1
+            c=2
+            return render_template("details.html",a=a,b=b,details=final_details,c=c,name=name_final,price=price_final,desc=desc_final,q=q)
+        if (q>0) and (cumsum_final[q]-cumsum_final[q-1]==3):
+            a=cumsum_final[q]
+            b=cumsum_final[q]+1
+            c=cumsum_final[q]+2
+            return render_template("details.html",a=a,b=b,details=final_details,c=c,name=name_final,price=price_final,desc=desc_final,q=q)
+        if (q>0) and (cumsum_final[q]-cumsum_final[q-1]==2):
+            a=cumsum_final[q]+1
+            b=cumsum_final[q]+2
+            return render_template("detailscopy.html",a=a,b=b,details=final_details,name=name_final,price=price_final,desc=desc_final,q=q)
 
-    if (q==0) and ((num_final[1]-0)==2):
-        a=0
-        b=1
-        return render_template("detailscopy.html",a=a,b=b,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
-    if (q==0) and ((num_final[1]-0)==3):
-        a=0
-        b=1
-        c=2
-        return render_template("details.html",a=a,b=b,details=final_details,c=c,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
-    if (q>0) and (cumsum_final[q]-cumsum_final[q-1]==3):
-        a=cumsum_final[q]
-        b=cumsum_final[q]+1
-        c=cumsum_final[q]+2
-        return render_template("details.html",a=a,b=b,details=final_details,c=c,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
-    if (q>0) and (cumsum_final[q]-cumsum_final[q-1]==2):
-        a=cumsum_final[q]+1
-        b=cumsum_final[q]+2
-        return render_template("detailscopy.html",a=a,b=b,details=final_details,name=name_final,price=price_final,desc=desc_final,q=q,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
-
-    return render_template("details.html",details=final_details,name=name_final,price=price_final,desc=desc_final,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
+        return render_template("details.html",details=final_details,name=name_final,price=price_final,desc=desc_final)       
 
 
 def getLoginDetails():
@@ -457,33 +550,42 @@ def getLoginDetails():
     return (loggedIn, firstName)
 @app.route("/addToWishh")
 def addToWishh():
-
-    productId = request.args.get('id')
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("INSERT INTO wishlist (product_id) VALUES (?)", (productId,))
-        conn.commit()
-    conn.close()
-    return redirect(url_for('shop'))
+    if 'email' not in session:
+        return redirect(url_for('loginForm'))
+    else:
+        productId = request.args.get('id')
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO wishlist (product_id) VALUES (?)", (productId,))
+            conn.commit()
+        conn.close()
+        return redirect(url_for('shop'))
 @app.route("/addToWish")
 def addToWish():
+    if 'email' not in session:
+        return redirect(url_for('loginForm'))
+    else:
 
-    productId = request.args.get('id')
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("INSERT INTO wishlist (product_id) VALUES (?)", (productId,))
-        conn.commit()
-    conn.close()
-    return redirect(url_for('root'))
+        productId = request.args.get('id')
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO wishlist (product_id) VALUES (?)", (productId,))
+            conn.commit()
+        conn.close()
+        return redirect(url_for('root'))
 @app.route("/addToWishhh",methods=["GET"])
 def addToWishhh():
-    productId = request.args.get('id')
-    with sqlite3.connect(db_path) as conn:
-        cur = conn.cursor()
-        cur.execute("INSERT INTO wishlist (product_id) VALUES (?)", (productId,))
-        conn.commit()
-    conn.close()
-    return redirect(url_for('shop'))
+    if 'email' not in session:
+        return redirect(url_for('loginForm'))
+    else:
+
+        productId = request.args.get('id')
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO wishlist (product_id) VALUES (?)", (productId,))
+            conn.commit()
+        conn.close()
+        return redirect(url_for('shop'))
 @app.route("/deleteWish")
 def deleteWish():
     n = request.args.get('id')
@@ -525,49 +627,73 @@ def deleteCart():
 @app.route("/wishlist")
 def wishlist():
     loggedIn, firstName= getLoginDetails()
-    email = session['email']
-    with sqlite3.connect(db_path) as conn:
-        cur=conn.cursor()
-        cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
-        userId = cur.fetchone()[0]
-        cur=conn.cursor()
-        cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
-        number=cur.fetchall()
-        cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
-        price_cart=cur.fetchall()
-        cur.execute("SELECT user.product_name FROM user, wishlist WHERE user.product_id = wishlist.product_id")
-        name=cur.fetchall()
-        cur.execute("SELECT user.product_price FROM user, wishlist WHERE user.product_id = wishlist.product_id")
-        price=cur.fetchall()
-        cur.execute("SELECT user.product_url FROM user, wishlist WHERE user.product_id = wishlist.product_id")
-        image=cur.fetchall()
-        cur.execute("SELECT count(*) FROM wishlist")
-        a=cur.fetchone()
-        cur.execute("SELECT * FROM wishlist")
-        product_id=cur.fetchall()
+    if 'email'in session:
+        email = session['email']
+        with sqlite3.connect(db_path) as conn:
+            cur=conn.cursor()
+            cur.execute("SELECT userId FROM registerrr WHERE email = ?", (email, ))
+            userId = cur.fetchone()[0]
+            cur=conn.cursor()
+            cur.execute("SELECT quantity from cart WHERE cart.userId = ?", (userId, ))
+            number=cur.fetchall()
+            cur.execute("SELECT DISTINCT user.product_price FROM user, cart WHERE user.product_id = cart.product_id AND cart.userId = ?", (userId, ))
+            price_cart=cur.fetchall()
+            cur.execute("SELECT user.product_name FROM user, wishlist WHERE user.product_id = wishlist.product_id")
+            name=cur.fetchall()
+            cur.execute("SELECT user.product_price FROM user, wishlist WHERE user.product_id = wishlist.product_id")
+            price=cur.fetchall()
+            cur.execute("SELECT user.product_url FROM user, wishlist WHERE user.product_id = wishlist.product_id")
+            image=cur.fetchall()
+            cur.execute("SELECT count(*) FROM wishlist")
+            a=cur.fetchone()
+            cur.execute("SELECT * FROM wishlist")
+            product_id=cur.fetchall()
 
-    if a is None:
-        a=0
+        if a is None:
+            a=0
+        else:
+            a=a[0]
+        price_final_cart=list(chain.from_iterable(price_cart))
+        price_int=[x[1:]for x in price_final_cart]
+        price_int=[float(x) for x in price_int]
+        name_final=list(chain.from_iterable(name))
+        product_id=list(chain.from_iterable(product_id))
+        price_final=list(chain.from_iterable(price))
+        image_final=list(chain.from_iterable(image))
+        number_final=list(chain.from_iterable(number))
+        total=sum(x * y for x, y in zip(price_int, number_final))
+        firstName=firstName[0]
+        if total==0:
+            total="£0.00"
+        else:
+            total="£"+str(total)+"0"
+        total_quantity=sum(number_final)
+
+
+        return render_template("wishlist.html",name= name_final,price=price_final,image=image_final,a=a,product_id=product_id,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
     else:
-        a=a[0]
-    price_final_cart=list(chain.from_iterable(price_cart))
-    price_int=[x[1:]for x in price_final_cart]
-    price_int=[float(x) for x in price_int]
-    name_final=list(chain.from_iterable(name))
-    product_id=list(chain.from_iterable(product_id))
-    price_final=list(chain.from_iterable(price))
-    image_final=list(chain.from_iterable(image))
-    number_final=list(chain.from_iterable(number))
-    total=sum(x * y for x, y in zip(price_int, number_final))
-    firstName=firstName[0]
-    if total==0:
-        total="£0.00"
-    else:
-        total="£"+str(total)+"0"
-    total_quantity=sum(number_final)
+        with sqlite3.connect(db_path) as conn:
+            cur=conn.cursor()
+            cur.execute("SELECT user.product_name FROM user, wishlist WHERE user.product_id = wishlist.product_id")
+            name=cur.fetchall()
+            cur.execute("SELECT user.product_price FROM user, wishlist WHERE user.product_id = wishlist.product_id")
+            price=cur.fetchall()
+            cur.execute("SELECT user.product_url FROM user, wishlist WHERE user.product_id = wishlist.product_id")
+            image=cur.fetchall()
+            cur.execute("SELECT count(*) FROM wishlist")
+            a=cur.fetchone()
+            cur.execute("SELECT * FROM wishlist")
+            product_id=cur.fetchall()
 
-
-    return render_template("wishlist.html",name= name_final,price=price_final,image=image_final,a=a,product_id=product_id,loggedIn=loggedIn,firstName=firstName,total=total,total_quantity=total_quantity)
+        if a is None:
+            a=0
+        else:
+            a=a[0]
+        name_final=list(chain.from_iterable(name))
+        product_id=list(chain.from_iterable(product_id))
+        price_final=list(chain.from_iterable(price))
+        image_final=list(chain.from_iterable(image))
+        return render_template("wishlist.html",name= name_final,price=price_final,image=image_final,a=a,product_id=product_id)
 @app.route("/cart")
 def cart():
     loggedIn, firstName= getLoginDetails()
